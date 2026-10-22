@@ -3,11 +3,24 @@
   <head>
     <title>Socket.IO chat</title>
     <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f7f4ff;
+        background-image:
+          radial-gradient(ellipse at 12% 8%, rgba(255, 190, 211, 0.72), transparent 34%),
+          radial-gradient(ellipse at 88% 18%, rgba(176, 211, 255, 0.72), transparent 36%),
+          radial-gradient(ellipse at 72% 88%, rgba(210, 190, 255, 0.7), transparent 38%),
+          radial-gradient(rgba(255, 255, 255, 0.68) 1px, transparent 1.5px),
+          linear-gradient(135deg, #fff8f3 0%, #f5f3ff 52%, #edf8ff 100%);
+        background-size: auto, auto, auto, 28px 28px, auto;
+        background-attachment: fixed;
+      }
+      #form { background: rgba(255, 255, 255, 0.76); border-top: 1px solid rgba(255, 255, 255, 0.8); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(14px); }
       #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
       #input:focus { outline: none; }
-      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+      #form > button { background: linear-gradient(135deg, #8065d8, #568bdc); border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 1rem; outline: none; color: #fff; font-weight: 600; }
       #messages { list-style-type: none; margin: 0; padding: 0; width: 100%; }
       .message-item {
         display: flex;
@@ -47,8 +60,8 @@
         flex-direction: row-reverse;
       }
       .timestamp {
-        font-size: 0.7rem;
-        color: #888;
+        font-size: 0.75rem;
+        color: #666;
       }
       .message-bubble {
         padding: 0.5rem 1rem;
@@ -96,13 +109,47 @@
       const input = document.getElementById('input');
       const messages = document.getElementById('messages');
 
-      function getColorFromId(id) {
+      function createLionIcon(id) {
         let hash = 0;
         for (let i = 0; i < id.length; i++) {
           hash = id.charCodeAt(i) + ((hash << 5) - hash);
         }
-        const h = Math.abs(hash % 360);
-        return `hsl(${h}, 60%, 65%)`;
+        hash >>>= 0;
+
+        const backgrounds = ['#f8cbd6', '#c8ddff', '#d4edc8', '#ffe0ad', '#d9cdfa', '#bfe9e3'];
+        const manes = ['#bd7449', '#e6b85c', '#8c543c', '#d98a3f', '#a9684e', '#c99545'];
+        const faces = ['#f4c66e', '#eeb95d', '#f7d58a', '#e8aa50', '#f2c879', '#f5d28a'];
+        const accents = ['#714638', '#a85d32', '#5b3932', '#9c532d', '#754b3c', '#985c32'];
+        const maneShapes = [
+          '<path d="M48 9 58 16 70 13 74 25 84 32 79 43 85 54 77 63 79 75 66 77 59 87 48 81 37 87 30 77 18 75 19 63 11 54 17 43 12 32 24 25 27 13 39 16Z"/>',
+          '<path d="M48 9C69 9 86 26 86 48S69 86 48 86 10 69 10 48 27 9 48 9Z"/>',
+          '<path d="M48 10 56 17 68 11 74 24 85 30 79 42 86 52 77 62 80 74 66 76 58 87 47 80 36 87 29 76 16 74 20 61 10 52 17 41 13 29 25 23 29 12 40 17Z"/>',
+          '<path d="M48 11C59 11 67 16 73 24 82 29 85 39 84 49 86 61 78 73 67 78 61 85 53 87 47 83 37 88 27 81 24 75 14 69 10 59 13 48 9 37 16 27 25 23 30 14 39 10 48 11Z"/>'
+        ];
+        const background = backgrounds[hash % backgrounds.length];
+        const mane = manes[(hash >>> 4) % manes.length];
+        const face = faces[(hash >>> 8) % faces.length];
+        const accent = accents[(hash >>> 12) % accents.length];
+        const maneShape = maneShapes[(hash >>> 16) % maneShapes.length];
+        const patch = (hash >>> 20) % 2 === 0
+          ? '<path d="M32 44q6-7 12-2l-2 11q-8 2-10-9Z" fill="' + accent + '"/>'
+          : '<path d="M64 44q-6-7-12-2l2 11q8 2 10-9Z" fill="' + accent + '"/>';
+
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+          <rect width="96" height="96" rx="48" fill="${background}"/>
+          <path d="M25 39C19 31 22 22 31 21 37 21 40 27 40 33ZM71 39C77 31 74 22 65 21 59 21 56 27 56 33Z" fill="${mane}"/>
+          <g fill="${mane}">${maneShape}</g>
+          <ellipse cx="48" cy="51" rx="23" ry="27" fill="${face}"/>
+          <path d="M33 32q15-12 30 0-8-5-15-3-8-2-15 3Z" fill="${mane}"/>
+          ${patch}
+          <ellipse cx="48" cy="63" rx="15" ry="11" fill="#fff1d7"/>
+          <ellipse cx="39" cy="51" rx="2.5" ry="3" fill="#29252a"/>
+          <ellipse cx="57" cy="51" rx="2.5" ry="3" fill="#29252a"/>
+          <path d="M44 59 48 56 52 59Q51 63 48 63 45 63 44 59Z" fill="#49302a"/>
+          <path d="M48 63v3m0 0c-3 4-6 3-8 1m8-1c3 4 6 3 8 1" fill="none" stroke="#59403a" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M38 72q10 5 20 0" fill="none" stroke="${mane}" stroke-width="3" stroke-linecap="round"/>
+        </svg>`;
+        return `data:image/svg+xml,${encodeURIComponent(svg)}`;
       }
 
       function displaySystemMessage(message) {
@@ -154,9 +201,9 @@
         }
 
         const userIcon = document.createElement('img');
-        userIcon.src = 'userIcon.png';
+        userIcon.src = createLionIcon(data.id);
+        userIcon.alt = `${data.id.substring(0, 6)} のライオンアイコン`;
         userIcon.classList.add('user-icon');
-        userIcon.style.backgroundColor = getColorFromId(data.id);
 
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
@@ -171,7 +218,7 @@
         const timestamp = document.createElement('time');
         timestamp.classList.add('timestamp');
         timestamp.dateTime = new Date(data.timestamp || Date.now()).toISOString();
-        timestamp.textContent = formatTimestamp(data.timestamp);
+        timestamp.textContent = `送信時刻 ${formatTimestamp(data.timestamp)}`;
 
         const messageBubble = document.createElement('div');
         messageBubble.classList.add('message-bubble');
